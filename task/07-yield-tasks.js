@@ -13,7 +13,7 @@
  * Returns the lines sequence of "99 Bottles of Beer" song:
  *
  *  '99 bottles of beer on the wall, 99 bottles of beer.'
- *  'Take one down and pass it around, 98 bottles of beer on the wall.'
+ *  'Take one down and pass it around, 98 bottles of beer on the wall.'`
  *  '98 bottles of beer on the wall, 98 bottles of beer.'
  *  'Take one down and pass it around, 97 bottles of beer on the wall.'
  *  ...
@@ -33,7 +33,20 @@
  *
  */
 function* get99BottlesOfBeer() {
-    throw new Error('Not implemented');
+    var bottle;
+    function firstLine(num){
+        bottle =  num!= 1 ?' bottles': ' bottle';
+        return `${num!= 0 ?num + bottle :'No more' + bottle} of beer on the wall, ${num!= 0 ?num + bottle :'no more' + bottle} of beer.`
+    } 
+    function secodLine(num){
+        bottle =  num!= 1 ?' bottles': ' bottle';
+        return num> -1?  `Take one down and pass it around, ${num!= 0 ?num + bottle :'no more' + bottle} of beer on the wall.` : 'Go to the store and buy some more, 99 bottles of beer on the wall.'
+    }
+    var i = 99;
+    for (; i > -1; ) {
+        yield firstLine(i);
+        yield secodLine(--i);
+    }
 }
 
 
@@ -47,7 +60,18 @@ function* get99BottlesOfBeer() {
  *
  */
 function* getFibonacciSequence() {
-    throw new Error('Not implemented');
+    yield 0;
+    yield 1;
+    var num1 = 0;
+    var num2 = 1;
+    function Fibonacci(numberOne, numberTwo){
+        num1 =numberTwo;
+        num2 = numberOne + numberTwo
+        return num2;
+    }
+    while(true){
+        yield Fibonacci(num1, num2);
+    }
 }
 
 
@@ -82,7 +106,15 @@ function* getFibonacciSequence() {
  *
  */
 function* depthTraversalTree(root) {
-    throw new Error('Not implemented');
+    var arr = [root];
+    for (var i = 0; i < arr.length; i++) {
+        yield arr[i];
+        if ('children' in arr[i]) {
+            for (var j = 0; j < arr[i].children.length; j++) {
+                arr.splice(i + 1 + j, 0, arr[i].children[j]);
+            }
+        }
+    }  
 }
 
 
@@ -108,9 +140,16 @@ function* depthTraversalTree(root) {
  *
  */
 function* breadthTraversalTree(root) {
-    throw new Error('Not implemented');
+    var arr = [root];
+    for (var i = 0; i < arr.length; i++) {
+        yield arr[i];
+        if ('children' in arr[i]) {
+            for (var j = 0; j < arr[i].children.length; j++) {
+                arr.push(arr[i].children[j]);
+            }
+        }
+    }  
 }
-
 
 /**
  * Merges two yield-style sorted sequences into the one sorted sequence.
@@ -126,7 +165,29 @@ function* breadthTraversalTree(root) {
  *   [ 1, 3, 5, ... ], [ -1 ] => [ -1, 1, 3, 5, ...]
  */
 function* mergeSortedSequences(source1, source2) {
-    throw new Error('Not implemented');
+    source1 = source1();
+    source2 = source2();
+    var i = source1.next();
+    var j = source2.next();
+    while(true){
+        if(!i.done && !j.done){
+            if(i.value  < j.value) {
+                yield  i.value; 
+                i = source1.next();
+            }else{
+                yield  j.value; 
+                j = source2.next();
+            }
+        }else{
+            if(i.done){
+                yield  j.value; 
+                j = source2.next();
+            }else{
+                yield  i.value; 
+                i = source1.next();
+            }
+        }
+    }
 }
 
 /**
@@ -145,8 +206,13 @@ function* mergeSortedSequences(source1, source2) {
  *   Most popular implementation of the logic in npm https://www.npmjs.com/package/co
  */
 function async(generator) {
-    throw new Error('Not implemented');
+    function resolver(res) { 
+        return res.done ?  Promise.resolve(res.value) : Promise.resolve(res.value).then((args) => resolver(generator.next(args)))    
+    }
+    generator = generator();
+    return resolver(generator.next());
 }
+
 
 
 module.exports = {
